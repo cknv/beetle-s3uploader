@@ -38,6 +38,7 @@ class Uploader:
                 # Check if we are gzipping.
                 # And if the file will actually benefit from being compressed.
                 if self.gzip and prefix not in {'image'}:
+                    # Build a compressor, it's a bit magic.
                     compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
                     compressed = compressor.compress(file_in.read()) + compressor.flush()
                     yield destination, compressed, content_type, True
