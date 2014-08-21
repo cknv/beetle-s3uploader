@@ -16,7 +16,7 @@ class Uploader:
         # Using environment variables
         self.connection = S3Connection()
         self.bucket = self.get_bucket()
-        self.headers = config.get('headers', [])
+        self.headers = [h.split(':') for h in config.get('headers', [])]
 
     def get_bucket(self):
         try:
