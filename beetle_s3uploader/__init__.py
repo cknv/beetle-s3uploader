@@ -1,9 +1,6 @@
 from boto.s3.connection import S3Connection, Key
-# from boto.s3 import Key
 from boto.exception import S3ResponseError
 import mimetypes
-from StringIO import StringIO
-from gzip import GzipFile
 import zlib
 import os
 
@@ -34,16 +31,18 @@ class Uploader:
             destination = os.path.relpath(page_path, self.folder)
             content_type, content_encoding = mimetypes.guess_type(destination)
             prefix, suffix = content_type.split('/')
-            with open(page_path) as file_in:
+            # Open the file in binary mode to get bytes
+            with open(page_path, 'rb') as file_in:
                 # Check if we are gzipping.
                 # And if the file will actually benefit from being compressed.
+                file_contents = file_in.read()
                 if self.gzip and prefix not in {'image'}:
                     # Build a compressor, it's a bit magic.
                     compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
-                    compressed = compressor.compress(file_in.read()) + compressor.flush()
+                    compressed = compressor.compress(file_contents) + compressor.flush()
                     yield destination, compressed, content_type, True
                 else:
-                    yield destination, file_in.read(), content_type, False          
+                    yield destination, file_contents, content_type, False          
 
     def upload(self):
         for destination, data, content_type, compressed in self.read_files():
