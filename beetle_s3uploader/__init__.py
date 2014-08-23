@@ -65,4 +65,4 @@ class Uploader:
 def register(plugin_config, config, commander, builder, content_renderer):
     uploader = Uploader(plugin_config, config)
     commander.add('s3upload', uploader.upload, 'Upload the rendered site')
-    commander.add('s3clean', uploader.clean, 'Delte everything in the S3 bucket')
+    commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
