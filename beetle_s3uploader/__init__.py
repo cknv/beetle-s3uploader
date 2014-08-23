@@ -4,6 +4,7 @@ import mimetypes
 import zlib
 import os
 
+
 class Uploader:
     def __init__(self, config, beetle_config):
         self.folder = beetle_config.folders['output']
@@ -42,7 +43,7 @@ class Uploader:
                     compressed = compressor.compress(file_contents) + compressor.flush()
                     yield destination, compressed, content_type, True
                 else:
-                    yield destination, file_contents, content_type, False          
+                    yield destination, file_contents, content_type, False
 
     def upload(self):
         for destination, data, content_type, compressed in self.read_files():
