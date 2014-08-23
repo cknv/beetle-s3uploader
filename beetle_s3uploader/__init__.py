@@ -4,13 +4,14 @@ import mimetypes
 import zlib
 import os
 
+
 class Uploader:
     def __init__(self, config, beetle_config):
         self.folder = beetle_config.folders['output']
         self.bucket_name = beetle_config.site['domain']
         self.gzip = config.get('gzip', False)
         self.cache = config.get('cache', 3600)
-        # Using environment variables
+        # Using environment variables or ~/.boto
         self.connection = S3Connection()
         self.bucket = self.get_bucket()
         self.headers = [h.split(':') for h in config.get('headers', [])]
@@ -42,7 +43,7 @@ class Uploader:
                     compressed = compressor.compress(file_contents) + compressor.flush()
                     yield destination, compressed, content_type, True
                 else:
-                    yield destination, file_contents, content_type, False          
+                    yield destination, file_contents, content_type, False
 
     def upload(self):
         for destination, data, content_type, compressed in self.read_files():
@@ -64,4 +65,4 @@ class Uploader:
 def register(plugin_config, config, commander, builder, content_renderer):
     uploader = Uploader(plugin_config, config)
     commander.add('s3upload', uploader.upload, 'Upload the rendered site')
-    commander.add('s3clean', uploader.clean, 'Delte everything in the S3 bucket')
+    commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
