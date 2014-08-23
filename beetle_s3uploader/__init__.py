@@ -11,7 +11,7 @@ class Uploader:
         self.bucket_name = beetle_config.site['domain']
         self.gzip = config.get('gzip', False)
         self.cache = config.get('cache', 3600)
-        # Using environment variables
+        # Using environment variables or ~/.boto
         self.connection = S3Connection()
         self.bucket = self.get_bucket()
         self.headers = [h.split(':') for h in config.get('headers', [])]
