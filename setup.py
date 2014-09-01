@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='beetle_s3upload',
+    name='beetle.s3upload',
     author='Esben Sonne',
     author_email='esbensonne@gmail.com',
     url='https://github.com/cknv/beetle-s3uploader',
