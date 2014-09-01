@@ -1,3 +1,4 @@
+from beetle import Commander, Writer
 from boto.s3.connection import S3Connection, Key
 from boto.exception import S3ResponseError
 import mimetypes
@@ -6,9 +7,10 @@ import os
 
 
 class Uploader:
-    def __init__(self, config, beetle_config):
+    def __init__(self, config, beetle_config, writer):
         self.folder = beetle_config.folders['output']
         self.bucket_name = beetle_config.site['domain']
+        self.writer = writer
         self.gzip = config.get('gzip', False)
         self.cache = config.get('cache', 3600)
         # Using environment variables or ~/.boto
@@ -22,31 +24,19 @@ class Uploader:
         except S3ResponseError as err:
             return self.connection.create_bucket(self.bucket_name)
 
-    def list_files(self):
-        for folder, __, file_names in os.walk(self.folder):
-            for file_name in file_names:
-                yield os.path.join(folder, file_name)
-
-    def read_files(self):
-        for page_path in self.list_files():
-            destination = os.path.relpath(page_path, self.folder)
+    def get_files(self):
+        for destination, content in self.writer.files():
             content_type, content_encoding = mimetypes.guess_type(destination)
             prefix, suffix = content_type.split('/')
-            # Open the file in binary mode to get bytes
-            with open(page_path, 'rb') as file_in:
-                # Check if we are gzipping.
-                # And if the file will actually benefit from being compressed.
-                file_contents = file_in.read()
-                if self.gzip and prefix not in {'image'}:
-                    # Build a compressor, it's a bit magic.
-                    compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
-                    compressed = compressor.compress(file_contents) + compressor.flush()
-                    yield destination, compressed, content_type, True
-                else:
-                    yield destination, file_contents, content_type, False
+            gzipped = False
+            if self.gzip and prefix not in {'image'}:
+                compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+                content = compressor.compress(content) + compressor.flush()
+                gzipped = True
+            yield destination, content, content_type, gzipped
 
     def upload(self):
-        for destination, data, content_type, compressed in self.read_files():
+        for destination, data, content_type, compressed in self.get_files():
             key = Key(self.bucket)
             key.content_type = content_type
             if compressed:
@@ -62,7 +52,7 @@ class Uploader:
             key.delete()
 
 
-def register(plugin_config, config, commander, builder, content_renderer, includer):
-    uploader = Uploader(plugin_config, config)
-    commander.add('s3upload', uploader.upload, 'Upload the rendered site')
-    commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
+def register(plugin_config, config):
+    uploader = Uploader(plugin_config, config, Writer())
+    Commander.add('s3upload', uploader.upload, 'Upload the rendered site')
+    Commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
