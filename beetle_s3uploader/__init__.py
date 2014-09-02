@@ -1,4 +1,4 @@
-from beetle import Commander, Writer
+from beetle.context import commander, writer
 from boto.s3.connection import S3Connection, Key
 from boto.exception import S3ResponseError
 import mimetypes
@@ -53,6 +53,6 @@ class Uploader:
 
 
 def register(plugin_config, config):
-    uploader = Uploader(plugin_config, config, Writer())
-    Commander.add('s3upload', uploader.upload, 'Upload the rendered site')
-    Commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
+    uploader = Uploader(plugin_config, config, writer)
+    commander.add('s3upload', uploader.upload, 'Upload the rendered site')
+    commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
