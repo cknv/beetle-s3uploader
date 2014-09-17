@@ -1,4 +1,3 @@
-from beetle.context import commander, writer
 from boto.s3.connection import S3Connection, Key
 from boto.exception import S3ResponseError
 import mimetypes
@@ -7,16 +6,14 @@ import os
 
 
 class Uploader:
-    def __init__(self, config, beetle_config, writer):
-        self.folder = beetle_config.folders['output']
-        self.bucket_name = beetle_config.site['domain']
+    def __init__(self, gzip, headers, writer, bucket_name):
         self.writer = writer
-        self.gzip = config.get('gzip', False)
-        self.cache = config.get('cache', 3600)
+        self.bucket_name = bucket_name
+        self.gzip = gzip
+        self.bucket = self.get_bucket()
+        self.headers = [h.split(':') for h in headers]
         # Using environment variables or ~/.boto
         self.connection = S3Connection()
-        self.bucket = self.get_bucket()
-        self.headers = [h.split(':') for h in config.get('headers', [])]
 
     def get_bucket(self):
         try:
@@ -52,7 +49,10 @@ class Uploader:
             key.delete()
 
 
-def register(plugin_config, config):
-    uploader = Uploader(plugin_config, config, writer)
-    commander.add('s3upload', uploader.upload, 'Upload the rendered site')
-    commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
+def register(ctx, config):
+    gzip = config.get('gzip', False)
+    headers = config.get('headers', [])
+
+    uploader = Uploader(gzip, headers, ctx.writer, ctx.config.site['domain'])
+    ctx.commander.add('s3upload', uploader.upload, 'Upload the rendered site')
+    ctx.commander.add('s3clean', uploader.clean, 'Delete everything in the S3 bucket')
