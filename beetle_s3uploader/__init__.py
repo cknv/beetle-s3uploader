@@ -10,10 +10,11 @@ class Uploader:
         self.writer = writer
         self.bucket_name = bucket_name
         self.gzip = gzip
-        self.bucket = self.get_bucket()
         self.headers = [h.split(':') for h in headers]
+
         # Using environment variables or ~/.boto
         self.connection = S3Connection()
+        self.bucket = self.get_bucket()
 
     def get_bucket(self):
         try:
