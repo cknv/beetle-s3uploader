@@ -2,6 +2,7 @@ from setuptools import setup
 
 setup(
     name='beetle_s3uploader',
+    version='0.1.0'
     author='Esben Sonne',
     author_email='esbensonne+code@gmail.com',
     description='Beetle plugin to upload the site to S3',
