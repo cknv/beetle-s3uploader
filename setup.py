@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='beetle_s3uploader',
+    name='Beetle-S3Uploader',
     version='0.1.0'
     author='Esben Sonne',
     author_email='esbensonne+code@gmail.com',
@@ -10,6 +10,15 @@ setup(
     license='MIT',
     packages=[
         'beetle_s3uploader'
+    ],
+    classifiers=[
+        'Environment :: Plugins',
+        'Environment :: Console',
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Topic :: Internet :: WWW/HTTP :: Site Management',
     ],
     install_requires=[
         'boto'
